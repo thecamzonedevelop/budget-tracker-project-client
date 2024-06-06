@@ -1,7 +1,8 @@
 <template>
   <div class="home">
-    <el-button>I am ElButton</el-button>
-
+    <n-button type="primary">
+      Primary
+    </n-button>
   </div>
 </template>
 

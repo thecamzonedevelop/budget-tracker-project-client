@@ -4,7 +4,9 @@ import "./registerServiceWorker";
 import router from "./router";
 import "./assets/css/tailwind.css";
 import store from "./store";
-import ElementPlus from 'element-plus'
-import 'element-plus/dist/index.css'
-
-createApp(App).use(store).use(router).use(ElementPlus).mount("#app");
+import naive from "naive-ui";
+createApp(App)
+.use(store)
+.use(router)
+.use(naive)
+.mount("#app");
