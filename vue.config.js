@@ -7,7 +7,7 @@ module.exports = defineConfig({
     open: true,
     proxy: {
       '/api': {
-        target: 'https://jsonplaceholder.typicode.com',
+        target: 'http://localhost:8080',
         changeOrigin: true,
         ws: true,
         pathRewrite: {

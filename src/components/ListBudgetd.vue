@@ -1,5 +1,5 @@
 <template>
-    <div class="w-full p-4 flex justify-between bg-green-50 rounded-md">
+    <div class="w-full p-4 flex justify-between bg-green-50 rounded-md" @click="emitClickRecord">
         <div class="flex gap-3 w-full md:w-1/2">
             <div class="h-16 w-16 bg-white rounded-lg flex items-center justify-center text-xl">
                 💼
@@ -19,21 +19,21 @@
         </div>
 
         <div class="md:flex justify-end items-center gap-2 hidden ">
-            <n-button strong secondary circle type="error">
+            <n-button strong secondary circle type="error" @click="emitClickDelete">
                 <template #icon>
                     <n-icon size="16">
                         <TrashOutline />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button strong secondary circle type="warning">
+            <n-button strong secondary circle type="warning" @click="emitClickEdit">
                 <template #icon>
                     <n-icon size="16">
                         <CreateOutline />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button strong secondary circle type="info">
+            <n-button strong secondary circle type="info" @click="emitClickRecord">
                 <template #icon>
                     <n-icon size="16">
                         <EyeOutline />
@@ -59,7 +59,19 @@ export default {
         EyeOutline,
         TrashOutline,
         CreateOutline
-    }
+    },
+    methods: {
+        emitClickRecord() {
+            this.$emit('clickRecord')
+        },
+        emitClickEdit() {
+            this.$emit('clickEdit')
+        },
+        emitClickDelete() {
+            this.$emit('clickDelete')
+        }
+        
+    },
 
 }
 </script>
