@@ -6,8 +6,14 @@
             </div>
             <div class="flex-1">
                 <div class="flex justify-between items-center w-full">
-                    <p class="text-xl font-medium">Salary</p>
-                    <p class="text-xl font-medium text-green-600">+1,200$</p>
+                    <p class="text-xl font-medium">
+                        {{budgetsItem.categoryName}}
+                    </p>
+                    <p class="text-xl font-medium "
+                        :class="budgetsItem.type=='expense'?'text-red-500':'text-green-500'"
+                    >
+                        {{ budgetsItem.type=='expense'?'- ':'+ '  }}{{ budgetsItem.amount}}$
+                    </p>
                 </div>
                 <div class="w-full mt-2 text-end">
                     <p>40%</p>
@@ -48,6 +54,12 @@
 import { GameControllerOutline, GameController, EyeOutline,TrashOutline,CreateOutline } from '@vicons/ionicons5'
 export default {
     name: "ListBudget",
+    props: {
+        budgetsItem: {
+            type: Object,
+            required: true
+        }
+    },
     data() {
         return {
             budgets: [],

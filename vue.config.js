@@ -5,16 +5,16 @@ module.exports = defineConfig({
   transpileDependencies: true,
   devServer: {
     open: true,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-        ws: true,
-        pathRewrite: {
-          '^/api': ''
-        }
-      }
-    },
+    // proxy: {
+    //   '/api': {
+    //     target: 'http://localhost:5001',
+    //     changeOrigin: true,
+    //     ws: true,
+    //     pathRewrite: {
+    //       '^/api': ''
+    //     }
+    //   }
+    // },
 
   }
 });
