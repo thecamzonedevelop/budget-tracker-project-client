@@ -157,23 +157,20 @@
             </div>
             <div class="w-full flex justify-center mt-2 flex-col items-center ">
               <div class="lg:w-1/2 w-full flex flex-col gap-2">
-                <n-input-number :value="amount" :keyboard="{ ArrowUp: false, ArrowDown: false }" autofocus>
-                  <template #prefix>
-                    <n-icon size="14" color="#000">
-                      <LogoYen />
-                    </n-icon>
-                  </template>
+                <n-input-number :default-value="10" :parse="parseCurrency" :format="formatCurrency" placeholder="Please enter amount"
+                  step=100 v-model:value="form.amount" autofocus>
                 </n-input-number>
 
-                <n-select v-model="category" :options="categoryList" />
+                <n-select v-model:value="form.category" placeholder="select category" :options="categoryList" />
                 <n-input-group>
-                  <n-date-picker v-model="timestamp" type="date" clearable />
+                  <n-date-picker v-model:value="form.date" type="date" clearable />
                 </n-input-group>
-                <n-input round v-model="remark" placeholder="Remark status ..." type="textarea" :autosize="{
+                <n-input round v-model:value="form.remark" placeholder="Remark status ..." type="textarea" :autosize="{
                   minRows: 3
                 }" />
               </div>
               <div class="lg:w-1/2 w-full mt-4">
+                <!--  :disabled="!form.amount || !form.category || !form.date" -->
                 <n-button @click="createBudget()" :color="tabe == 1 || tabe == 2 ? '#16A34A' : '#DC2626'"
                   class="w-full">
                   Save
@@ -201,10 +198,6 @@ import BaseChart from '../components/BarChart.vue';
 import { useMessage } from "naive-ui";
 import AllList from '../components/AllList.vue';
 import {
-  all,
-  income,
-  expensem,
-  dataList,
   category
 } from '@/constant';
 export default {
@@ -230,6 +223,12 @@ export default {
       showRecoad: false,
       showDraw: false,
       recoadList: [],
+      form: {
+        amount: 0,
+        category: '',
+        date: new Date(), // timestamp
+        remark: ''
+      },
       chartOptions: {
         tooltip: {
           trigger: 'item',
@@ -295,11 +294,14 @@ export default {
       let value = (this.totalExpense / (this.totalIncome + this.totalExpense)) * 100 || 0
       value = value.toFixed(2)
       return value
-    }
+    },
+    
   },
   mounted() {
 
   },
+
+
 
   created() {
     this.getAlltabe();
@@ -309,26 +311,25 @@ export default {
 
   },
   methods: {
+    parseCurrency: (input) => {
+        const nums = input.replace(/(,|\$|\s)/g, "").trim();
+        if (/^\d+(\.(\d+)?)?$/.test(nums))
+          return Number(nums);
+        return nums === "" ? null : Number.NaN;
+      },
+      formatCurrency: (value) => {
+        if (value === null)
+          return "";
+        return `${value.toLocaleString("en-US")} $`;
+      },
     createBudget() {
-
-      // if (!this.category) {
-      //   this.message.error('Please select category');
-      //   return;
-      // }
-      // if (!this.timestamp) {
-      //   this.message.error('Please select date');
-      //   return;
-      // }
-
-      // time stamp format 2023-03-01
-      let date = this.formatDate(this.timestamp);
       const data = {
-        amount: this.amount,
-        category: this.category,
-        date: date,
-        remark: this.remark
+        amount: this.form.amount,
+        category: this.form.category,
+        date: this.formatDate(new Date(this.form.date)),
+        remark: this.form.remark
       }
-      console.log("🚀 ~ createBudget ~ date:", data)
+      console.log("🚀 ~ createBudget ~ data:", data)
 
     },
     formatDate(date) {
@@ -343,15 +344,16 @@ export default {
       this.timestamp = new Date()
 
     },
-    filterCategory(type) {
+    async filterCategory(type) {
       this.categoryList = [];
-      category.forEach((item) => {
-        if (item.type == type) {
-          this.categoryList.push({
-            label: item.icon + ' ' + item.title,
-            value: item.id
-          })
-        }
+      const res = await this.$api.getCategory(type);
+      console.log("🚀 ~ filterCategory ~ res:", res)
+
+      res.forEach((item) => {
+        this.categoryList.push({
+          label: item.name,
+          value: item.id
+        })
       })
     },
 
@@ -378,6 +380,7 @@ export default {
 
       }
     },
+
 
     async ListAll() {
       try {

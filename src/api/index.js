@@ -6,5 +6,8 @@ export default {
     },
     listAll(page,size){
         return requst(`/budget/report?page=${page||0}&size=${size||5}`, "get");
+    },
+    getCategory(param){
+        return requst(`/categories?type=${param}`, "get");
     }
 }
