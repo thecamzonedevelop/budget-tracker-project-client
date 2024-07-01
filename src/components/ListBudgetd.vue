@@ -1,9 +1,11 @@
 <template>
-    <div class="w-full p-4 flex justify-between bg-green-50 rounded-md" @click="emitClickRecord">
+    <div 
+    :class="budgetsItem.type=='expense'?'bg-red-50':'bg-green-50'"
+    class="w-full p-4 flex justify-between rounded-md" @click="emitClickRecord">
         <div class="flex gap-3 w-full md:w-1/2">
-            <div class="h-16 w-16 bg-white rounded-lg flex items-center justify-center text-xl">
+            <!-- <div class="h-16 w-16 bg-white rounded-lg flex items-center justify-center text-xl">
                 💼
-            </div>
+            </div> -->
             <div class="flex-1">
                 <div class="flex justify-between items-center w-full">
                     <p class="text-xl font-medium">
@@ -18,7 +20,9 @@
                 <div class="w-full mt-2 text-end">
                     <p>40%</p>
                     <div>
-                        <n-progress type="line" :percentage="40" :show-indicator="false" />
+                        <n-progress
+                        :color="budgetsItem.type=='expense'?'#DC2626':'#16A34A'"
+                        type="line" :percentage="40" :show-indicator="false" />
                     </div>
                 </div>
             </div>

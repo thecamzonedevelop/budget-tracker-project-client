@@ -74,20 +74,7 @@
               </div>
               <n-progress type="line" color="#16A34A" :percentage="70" :show-indicator="false" />
             </div>
-            <div class="mt-4 lg:w-1/2 w-full ">
-              <div class="flex justify-between">
-                <p class="text-lg font-normal">Salary</p>
-                <p class="text-lg font-normal">70%</p>
-              </div>
-              <n-progress type="line" color="#16A34A" :percentage="70" :show-indicator="false" />
-            </div>
-            <div class="mt-4 lg:w-1/2 w-full ">
-              <div class="flex justify-between">
-                <p class="text-lg font-normal">Salary</p>
-                <p class="text-lg font-normal">70%</p>
-              </div>
-              <n-progress type="line" color="#16A34A" :percentage="70" :show-indicator="false" />
-            </div>
+           
           </div>
 
         </div>
@@ -157,8 +144,8 @@
             </div>
             <div class="w-full flex justify-center mt-2 flex-col items-center ">
               <div class="lg:w-1/2 w-full flex flex-col gap-2">
-                <n-input-number :default-value="10" :parse="parseCurrency" :format="formatCurrency" placeholder="Please enter amount"
-                  step=100 v-model:value="form.amount" autofocus>
+                <n-input-number :default-value="10" :parse="parseCurrency" :format="formatCurrency"
+                  placeholder="Please enter amount" step=100 v-model:value="form.amount" autofocus>
                 </n-input-number>
 
                 <n-select v-model:value="form.category" placeholder="select category" :options="categoryList" />
@@ -170,9 +157,9 @@
                 }" />
               </div>
               <div class="lg:w-1/2 w-full mt-4">
-                <!--  :disabled="!form.amount || !form.category || !form.date" -->
-                <n-button @click="createBudget()" :color="tabe == 1 || tabe == 2 ? '#16A34A' : '#DC2626'"
-                  class="w-full">
+                <n-button :loading="loadinBtn" @click="createBudget()"
+                  :disabled="!form.amount || !form.category || !form.date"
+                  :color="tabe == 1 || tabe == 2 ? '#16A34A' : '#DC2626'" class="w-full">
                   Save
                 </n-button>
               </div>
@@ -210,8 +197,10 @@ export default {
   },
   data() {
     return {
+      loadinBtn: false,
       categoryList: [],
       tabe: 1,
+      page:0,
       totalIncome: 0,
       totalExpense: 0,
       totalSave: 0,
@@ -295,7 +284,7 @@ export default {
       value = value.toFixed(2)
       return value
     },
-    
+
   },
   mounted() {
 
@@ -312,26 +301,42 @@ export default {
   },
   methods: {
     parseCurrency: (input) => {
-        const nums = input.replace(/(,|\$|\s)/g, "").trim();
-        if (/^\d+(\.(\d+)?)?$/.test(nums))
-          return Number(nums);
-        return nums === "" ? null : Number.NaN;
-      },
-      formatCurrency: (value) => {
-        if (value === null)
-          return "";
-        return `${value.toLocaleString("en-US")} $`;
-      },
-    createBudget() {
-      const data = {
-        amount: this.form.amount,
-        category: this.form.category,
-        date: this.formatDate(new Date(this.form.date)),
-        remark: this.form.remark
-      }
-      console.log("🚀 ~ createBudget ~ data:", data)
-
+      const nums = input.replace(/(,|\$|\s)/g, "").trim();
+      if (/^\d+(\.(\d+)?)?$/.test(nums))
+        return Number(nums);
+      return nums === "" ? null : Number.NaN;
     },
+    formatCurrency: (value) => {
+      if (value === null)
+        return "";
+      return `${value.toLocaleString("en-US")} $`;
+    },
+    createBudget(type) {
+  let categoryName = this.categoryList.find((item) => item.value == this.form.category).label;
+  
+  const data = {
+    amount: this.form.amount,
+    categoryID: this.form.category,
+    source: categoryName,
+    date: this.formatDate(new Date(this.form.date)),
+    remark: this.form.remark
+  };
+
+  this.loadinBtn = true;
+  const apiCall = (this.tabe === 1 || this.tabe === 2) ? this.$api.addIncome(data) : this.$api.addExpense(data);
+
+  apiCall.then((res) => {
+    this.loadinBtn = false;
+    this.message.success(`Create ${this.tabe === 1 || this.tabe === 2 ? 'income' : 'expense'} success`);
+    this.clearForm();
+    this.getAlltabe();
+    this.ListAll();
+  }).catch((error) => {
+    this.loadinBtn = false;
+    this.message.error(`Create ${this.tabe === 1 || this.tabe === 2 ? 'income' : 'expense'} fail`);
+    console.error('Error:', error.response ? error.response.data : error.message);
+  });
+},
     formatDate(date) {
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero indexed
@@ -340,9 +345,12 @@ export default {
       return `${year}-${month}-${day}`;
     },
     clearForm() {
-      this.category = ''
-      this.timestamp = new Date()
-
+      this.form = {
+        amount: 0,
+        category: '',
+        date: new Date(), // timestamp
+        remark: ''
+      }
     },
     async filterCategory(type) {
       this.categoryList = [];
