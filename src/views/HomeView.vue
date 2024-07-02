@@ -67,14 +67,14 @@
               <p class="mr-2">$ </p>
               <n-number-animation :from="0.00" :to="504440.07" show-separator :precision="2" />
             </div>
-            <div class="mt-4 lg:w-1/2 w-full ">
+            <!-- <div class="mt-4 lg:w-1/2 w-full ">
               <div class="flex justify-between">
                 <p class="text-lg font-normal">Salary</p>
                 <p class="text-lg font-normal">70%</p>
               </div>
               <n-progress type="line" color="#16A34A" :percentage="70" :show-indicator="false" />
-            </div>
-           
+            </div> -->
+
           </div>
 
         </div>
@@ -85,34 +85,21 @@
               <p class="mr-2">$ </p>
               <n-number-animation :from="0.00" :to="504440.07" show-separator :precision="2" />
             </div>
-            <div class="mt-4 lg:w-1/2 w-full ">
+            <!-- <div class="mt-4 lg:w-1/2 w-full ">
               <div class="flex justify-between">
                 <p class="text-lg font-normal">Salary</p>
                 <p class="text-lg font-normal">70%</p>
               </div>
               <n-progress type="line" color="#DC2626" :percentage="70" :show-indicator="false" />
-            </div>
-            <div class="mt-4 lg:w-1/2 w-full ">
-              <div class="flex justify-between">
-                <p class="text-lg font-normal">Salary</p>
-                <p class="text-lg font-normal">70%</p>
-              </div>
-              <n-progress type="line" color="#DC2626" :percentage="70" :show-indicator="false" />
-            </div>
-            <div class="mt-4 lg:w-1/2 w-full ">
-              <div class="flex justify-between">
-                <p class="text-lg font-normal">Salary</p>
-                <p class="text-lg font-normal">70%</p>
-              </div>
-              <n-progress type="line" color="#DC2626" :percentage="70" :show-indicator="false" />
-            </div>
+            </div> -->
+
           </div>
         </div>
       </div>
       <!-- list record -->
       <div class="mt-4 bg-white flex-1 overflow-y-scroll">
         <div class="md:p-8 p-4">
-          <AllList :budgets="recoadList" @clickRecord="ClickRecord" />
+          <AllList :budgets="recoadList" :total="total" @clickRecord="ClickRecord" @updateBudgets="updateBudgets" />
         </div>
       </div>
       <!-- button add -->
@@ -170,23 +157,43 @@
       </n-drawer-content>
     </n-drawer>
 
-    <n-drawer v-model:show="showRecoad" placement="bottom" resizable>
+    <n-modal v-model:show="showRecoad">
+      <n-card style="width: 600px" :title="budgetInfo.categoryName" :bordered="false" size="huge" role="dialog"
+        aria-modal="true">
+        <template #header-extra>
+          <p :class="budgetInfo.type == 'expense' ? 'text-red-500' : 'text-green-500'" class="text-2xl font-semibold"> {{
+            budgetInfo.type == 'expense' ? '- ' : '+ ' }}{{ budgetInfo.amount }}</p>
+        </template>
+        <div>
+          <p>
+            {{ budgetInfo.description }}
+            <span>{{ budgetInfo.date }}</span>
+          </p>
+
+        </div>
+        <template #footer>
+          <div class="flex gap-1 justify-end">
+            <n-button type="error" strong secondary>Delete</n-button>
+            <n-button type="warning" strong secondary>Update</n-button>
+            <n-button @click="showRecoad = false" type="primary">OK</n-button>
+          </div>
+        </template>
+      </n-card>
+    </n-modal>
+
+    <!-- <n-drawer v-model:show="showRecoad" placement="bottom" resizable>
       <n-drawer-content title="Stoner">
         Stoner is a 1965 novel by the American writer John Williams.
       </n-drawer-content>
-    </n-drawer>
+    </n-drawer> -->
   </div>
 </template>
 
 <script>
-import axios from 'axios';
 import { FlashOutline, LogoYen } from "@vicons/ionicons5";
 import BaseChart from '../components/BarChart.vue';
 import { useMessage } from "naive-ui";
 import AllList from '../components/AllList.vue';
-import {
-  category
-} from '@/constant';
 export default {
   name: "HomeView",
   components: {
@@ -200,7 +207,8 @@ export default {
       loadinBtn: false,
       categoryList: [],
       tabe: 1,
-      page:0,
+      page: 0,
+      total: 0,
       totalIncome: 0,
       totalExpense: 0,
       totalSave: 0,
@@ -212,6 +220,7 @@ export default {
       showRecoad: false,
       showDraw: false,
       recoadList: [],
+      budgetInfo: {},
       form: {
         amount: 0,
         category: '',
@@ -312,31 +321,33 @@ export default {
       return `${value.toLocaleString("en-US")} $`;
     },
     createBudget(type) {
-  let categoryName = this.categoryList.find((item) => item.value == this.form.category).label;
-  
-  const data = {
-    amount: this.form.amount,
-    categoryID: this.form.category,
-    source: categoryName,
-    date: this.formatDate(new Date(this.form.date)),
-    remark: this.form.remark
-  };
+      let categoryName = this.categoryList.find((item) => item.value == this.form.category).label;
 
-  this.loadinBtn = true;
-  const apiCall = (this.tabe === 1 || this.tabe === 2) ? this.$api.addIncome(data) : this.$api.addExpense(data);
+      const data = {
+        amount: this.form.amount,
+        categoryID: this.form.category,
+        source: categoryName,
+        date: this.formatDate(new Date(this.form.date)),
+        remark: this.form.remark
+      };
 
-  apiCall.then((res) => {
-    this.loadinBtn = false;
-    this.message.success(`Create ${this.tabe === 1 || this.tabe === 2 ? 'income' : 'expense'} success`);
-    this.clearForm();
-    this.getAlltabe();
-    this.ListAll();
-  }).catch((error) => {
-    this.loadinBtn = false;
-    this.message.error(`Create ${this.tabe === 1 || this.tabe === 2 ? 'income' : 'expense'} fail`);
-    console.error('Error:', error.response ? error.response.data : error.message);
-  });
-},
+      this.loadinBtn = true;
+      const apiCall = (this.tabe === 1 || this.tabe === 2) ? this.$api.addIncome(data) : this.$api.addExpense(data);
+
+      apiCall.then((res) => {
+        this.loadinBtn = false;
+        this.message.success(`Create ${this.tabe === 1 || this.tabe === 2 ? 'income' : 'expense'} success`);
+        this.clearForm();
+        this.getAlltabe();
+        this.ListAll();
+        this.showDraw = false;
+      }).catch((error) => {
+        this.loadinBtn = false;
+        this.showDraw = false;
+        this.message.error(`Create ${this.tabe === 1 || this.tabe === 2 ? 'income' : 'expense'} fail`);
+        console.error('Error:', error.response ? error.response.data : error.message);
+      });
+    },
     formatDate(date) {
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero indexed
@@ -364,7 +375,6 @@ export default {
         })
       })
     },
-
     async getAlltabe() {
       try {
         const res = await this.$api.getall()
@@ -388,19 +398,23 @@ export default {
 
       }
     },
-
-
-    async ListAll() {
+    
+    async ListAll(page = 0, size = 10) {
       try {
-        const res = await this.$api.listAll()
-        this.recoadList = res.content
-
+        const res = await this.$api.listAll(page, size);
+        this.recoadList = res.content;
+        this.total = res.totalElements;
       } catch (error) {
-        console.log(error)
+        console.log(error);
       }
     },
+    updateBudgets(newItems) {
+      this.recoadList = [...this.recoadList, ...newItems];
+    },
 
-    ClickRecord() {
+    ClickRecord(e) {
+      this.budgetInfo = e
+      console.log("🚀 ~ ClickRecord ~ this.budgetInfo:", this.budgetInfo)
       this.showRecoad = true
     },
     swichTab(e) {
@@ -412,26 +426,26 @@ export default {
         this.getAlltabe()
       } else if (e == 2) {
         this.filterCategory('income')
-        this.chartOptions.series[0] = {
-          color: [
-            '#E3E016',
-            '#DD1436',
-            '#2024E7',
-            '#16A34A'
-          ]
-        }
-        this.chartOptions.series[0].data = [
-          { value: 1048, name: 'Salary' },
-          { value: 735, name: 'Bonus' },
-          { value: 735, name: 'OT' },
-          { value: 735, name: 'Part time' }
-        ]
+        // this.chartOptions.series[0] = {
+        //   color: [
+        //     '#E3E016',
+        //     '#DD1436',
+        //     '#2024E7',
+        //     '#16A34A'
+        //   ]
+        // }
+        // this.chartOptions.series[0].data = [
+        //   { value: 1048, name: 'Salary' },
+        //   { value: 735, name: 'Bonus' },
+        //   { value: 735, name: 'OT' },
+        //   { value: 735, name: 'Part time' }
+        // ]
       } else {
         this.filterCategory('expense')
-        this.chartOptions.series[0].data = [
-          { value: 1048, name: 'Income' },
-          { value: 735, name: 'Expense' },
-        ]
+        // this.chartOptions.series[0].data = [
+        //   { value: 1048, name: 'Income' },
+        //   { value: 735, name: 'Expense' },
+        // ]
       }
     }
   },
