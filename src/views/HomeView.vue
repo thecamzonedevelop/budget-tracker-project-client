@@ -50,7 +50,7 @@
             </div>
           </div>
           <div class="mt-4">
-            <p class="text-lg font-bold">Saveing</p>
+            <p class="text-lg font-bold">Saving</p>
             <div class="text-3xl font-bold flex text-sky-500">
               <p class="mr-2">$ </p>
               <n-number-animation :from="0.00" :to="totalSpend" show-separator :precision="2" />
@@ -65,7 +65,7 @@
             <p class="text-lg font-bold">Total Incomes</p>
             <div class="text-3xl font-bold flex text-green-600">
               <p class="mr-2">$ </p>
-              <n-number-animation :from="0.00" :to="504440.07" show-separator :precision="2" />
+              <n-number-animation :from="0.00" :to="totalIncome" show-separator :precision="2" />
             </div>
             <!-- <div class="mt-4 lg:w-1/2 w-full ">
               <div class="flex justify-between">
@@ -78,21 +78,24 @@
           </div>
 
         </div>
-        <div class="flex-1 " v-show="tabe == 3">
+        <div class="flex-1 flex flex-col  " v-show="tabe == 3">
           <div class="">
             <p class="text-lg font-bold">Total Expense</p>
             <div class="text-3xl font-bold flex text-red-600">
               <p class="mr-2">$ </p>
-              <n-number-animation :from="0.00" :to="504440.07" show-separator :precision="2" />
+              <n-number-animation :from="0.00" :to="totalExpense" show-separator :precision="2" />
             </div>
-            <!-- <div class="mt-4 lg:w-1/2 w-full ">
-              <div class="flex justify-between">
-                <p class="text-lg font-normal">Salary</p>
-                <p class="text-lg font-normal">70%</p>
-              </div>
-              <n-progress type="line" color="#DC2626" :percentage="70" :show-indicator="false" />
-            </div> -->
-
+          </div>
+          <div class="text-lg font-medium mt-2">
+            <p>
+              Expense on
+            </p>
+          </div>
+          <div class="mt-4 lg:w-1/2 w-full flex-1  overflow-y-auto ">
+            <div class="flex justify-between items-center">
+              <p class="text-lg ">🏝️dfdfdf</p>
+              <p class="text-lg font-bold">+900</p>
+            </div>
           </div>
         </div>
       </div>
@@ -161,8 +164,9 @@
       <n-card style="width: 600px" :title="budgetInfo.categoryName" :bordered="false" size="huge" role="dialog"
         aria-modal="true">
         <template #header-extra>
-          <p :class="budgetInfo.type == 'expense' ? 'text-red-500' : 'text-green-500'" class="text-2xl font-semibold"> {{
-            budgetInfo.type == 'expense' ? '- ' : '+ ' }}{{ budgetInfo.amount }}</p>
+          <p :class="budgetInfo.type == 'expense' ? 'text-red-500' : 'text-green-500'" class="text-2xl font-semibold">
+            {{
+              budgetInfo.type == 'expense' ? '- ' : '+ ' }}{{ budgetInfo.amount }}</p>
         </template>
         <div>
           <p>
@@ -206,6 +210,8 @@ export default {
     return {
       loadinBtn: false,
       categoryList: [],
+      listEpentsCategory: [],
+      listIncomeCategory: [],
       tabe: 1,
       page: 0,
       total: 0,
@@ -306,7 +312,6 @@ export default {
     this.ListAll();
     this.filterCategory('income');
     this.message = useMessage();
-
   },
   methods: {
     parseCurrency: (input) => {
@@ -398,7 +403,28 @@ export default {
 
       }
     },
-    
+    async ListAllIncome(page = 0, size = 10) {
+      try {
+        const res = await this.$api.getAllIncome(page, size)
+        const res2 = await this.$api.getTotalIncome()
+        this.totalIncome = res2.total
+       
+        this.recoadList = res.content;
+        console.log("🚀 ~ ListAllIncome ~ this.recoadList:", this.recoadList)
+        this.total = res.totalElements;
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    async ListAllExpense(page = 0, size = 10) {
+      try {
+        const res = await this.$api.getAllExpense(page, size)
+        this.recoadList = res.content;
+        this.total = res.totalElements;
+      } catch (error) {
+        console.log(error);
+      }
+    },
     async ListAll(page = 0, size = 10) {
       try {
         const res = await this.$api.listAll(page, size);
@@ -414,7 +440,6 @@ export default {
 
     ClickRecord(e) {
       this.budgetInfo = e
-      console.log("🚀 ~ ClickRecord ~ this.budgetInfo:", this.budgetInfo)
       this.showRecoad = true
     },
     swichTab(e) {
@@ -424,8 +449,10 @@ export default {
       if (e == 1) {
         this.filterCategory('income')
         this.getAlltabe()
+        this.ListAll()
       } else if (e == 2) {
         this.filterCategory('income')
+        this.ListAllIncome()
         // this.chartOptions.series[0] = {
         //   color: [
         //     '#E3E016',
@@ -442,6 +469,10 @@ export default {
         // ]
       } else {
         this.filterCategory('expense')
+        this.ListAllExpense()
+        console.log('====================================');
+        console.log('Expense');
+        console.log('====================================');
         // this.chartOptions.series[0].data = [
         //   { value: 1048, name: 'Income' },
         //   { value: 735, name: 'Expense' },

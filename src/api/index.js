@@ -10,10 +10,10 @@ export default {
     getCategory(param){
         return requst(`/categories?type=${param}`, "get");
     },
-    getAllIncome(){
+    getAllIncome(page,size){
         return requst(`/incomes?page=${page||0}&size=${size||5}`, "get");
     },
-    getAllExpense(){
+    getAllExpense(page,size){
         return requst(`/expenses?page=${page||0}&size=${size||5}`, "get");
     },
     getTotalIncome(){
@@ -35,10 +35,10 @@ export default {
         return requst(`/expenses/delete?id=${param}`, "delete");
     },
     updateIncome(param){
-        return requst(`/incomes/${param.id}`, "put", param);
+        return requst(`/incomes/update`, "post", param);
     },
     updateExpense(param){
-        return requst(`/expenses/${param.id}`, "put", param);
+        return requst(`/expenses/update`, "post", param);
     },
     
 }

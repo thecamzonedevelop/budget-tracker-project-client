@@ -13,7 +13,7 @@
       <div v-if="loading" class="text">
         Loading...
       </div>
-      <div v-if="noMoreData" class="text">
+      <div v-if="noMoreData" class="text w-full text-center py-2">
         No More Data
       </div>
     </n-infinite-scroll>
