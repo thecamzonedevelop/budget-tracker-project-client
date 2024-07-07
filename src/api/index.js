@@ -42,5 +42,8 @@ export default {
     },
     fitterList(page,size,startDate, endDate){
         return requst(`/budget/budgetreport?page=${page||0}&size=${size||5}&start=${startDate}&end=${endDate}`, "get");
+    },
+    resetBudget(param){
+        return requst(`/budget/reset`, "post", param);
     }
 }

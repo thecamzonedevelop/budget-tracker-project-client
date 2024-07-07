@@ -23,7 +23,8 @@
       <!-- show monitor chart -->
       <div class="p-8 bg-white mt-4 flex md:flex-row flex-col relative ">
         <!-- clear -->
-        <div @click="showReset = true" class="absolute w-8 h-8 flex items-center rounded-md justify-center bg-red-600  right-2 top-2">
+        <div @click="showReset = true"
+          class="absolute w-8 h-8 flex items-center rounded-md justify-center bg-red-600  right-2 top-2">
           <n-icon size="18" color="#fff">
             <SyncCircleOutline />
           </n-icon>
@@ -73,13 +74,6 @@
               <p class="mr-2">$ </p>
               <n-number-animation :from="0.00" :to="totalIncome" show-separator :precision="2" />
             </div>
-            <!-- <div class="mt-4 lg:w-1/2 w-full ">
-              <div class="flex justify-between">
-                <p class="text-lg font-normal">Salary</p>
-                <p class="text-lg font-normal">70%</p>
-              </div>
-              <n-progress type="line" color="#16A34A" :percentage="70" :show-indicator="false" />
-            </div> -->
           </div>
           <div class="text-lg font-medium mt-2">
             <p>
@@ -87,9 +81,10 @@
             </p>
           </div>
           <div class="mt-4 lg:w-1/2 w-full flex-col flex flex-1 gap-2 overflow-y-auto ">
-            <div v-if="categoryTotal" v-for="(item, index) in categoryTotal" :key="index" class="flex justify-between items-center">
-              <p class="text-lg ">{{item.category.name}}</p>
-              <p class="text-lg font-bold text-green-600">+{{item.total}}</p>
+            <div v-if="categoryTotal" v-for="(item, index) in categoryTotal" :key="index"
+              class="flex justify-between items-center">
+              <p class="text-lg ">{{ item.category.name }}</p>
+              <p class="text-lg font-bold text-green-600">+{{ item.total }}</p>
             </div>
           </div>
         </div>
@@ -107,9 +102,10 @@
             </p>
           </div>
           <div class="mt-4 lg:w-1/2 w-full flex-col flex flex-1 gap-2 overflow-y-auto ">
-            <div v-if="categoryTotal" v-for="(item, index) in categoryTotal" :key="index" class="flex justify-between items-center">
-              <p class="text-lg ">{{item.category.name}}</p>
-              <p class="text-lg font-bold text-red-600">-{{item.total}}</p>
+            <div v-if="categoryTotal" v-for="(item, index) in categoryTotal" :key="index"
+              class="flex justify-between items-center">
+              <p class="text-lg ">{{ item.category.name }}</p>
+              <p class="text-lg font-bold text-red-600">-{{ item.total }}</p>
             </div>
           </div>
         </div>
@@ -119,7 +115,8 @@
       <div class="mt-4 bg-white flex-1 overflow-y-scroll">
         <div class="w-full pt-3 px-8 flex">
           <div class="md:w-80 w-full flex items-center gap-2">
-            <n-date-picker v-model:value="range" type="datetimerange" clearable  @clear="onClearFilterList" @confirm="filterList" />
+            <n-date-picker v-model:value="range" type="datetimerange" clearable @clear="onClearFilterList"
+              @confirm="filterList" />
             <n-icon size="28" color="#0e7a0d">
               <Cash />
             </n-icon>
@@ -178,13 +175,12 @@
               </div>
             </div>
           </div>
-
         </div>
       </n-drawer-content>
     </n-drawer>
 
     <n-modal v-model:show="showRecoad">
-      <n-card style="width: 600px" :title="budgetInfo.categoryName" :bordered="false" size="huge" role="dialog"
+      <n-card style="max-width: 600px;" class="mx-4 rounded-xl" :title="budgetInfo.categoryName" :bordered="false" size="huge" role="dialog"
         aria-modal="true">
         <template #header-extra>
           <p :class="budgetInfo.type == 'expense' ? 'text-red-500' : 'text-green-500'" class="text-2xl font-semibold">
@@ -200,7 +196,7 @@
         </div>
         <template #footer>
           <div class="flex gap-1 justify-end">
-            <n-button type="error" strong secondary>Delete</n-button>
+            <n-button type="error" @click="deleteList()" strong secondary>Delete</n-button>
             <n-button type="warning" strong secondary>Update</n-button>
             <n-button @click="showRecoad = false" type="primary">OK</n-button>
           </div>
@@ -209,36 +205,75 @@
     </n-modal>
 
     <n-modal v-model:show="showReset">
-      <n-card style="width: 600px" :title="budgetInfo.categoryName" :bordered="false" size="huge" role="dialog"
+      <n-card style="width: 300px" :bordered="false" size="huge" role="dialog"
         aria-modal="true">
-        <template #header-extra>
-          <p :class="budgetInfo.type == 'expense' ? 'text-red-500' : 'text-green-500'" class="text-2xl font-semibold">
-            {{
-              budgetInfo.type == 'expense' ? '- ' : '+ ' }}{{ budgetInfo.amount }}</p>
-        </template>
-        <div>
+
+        <!-- show message for reset budgetking -->
+        <div class="w-full flex flex-col items-center gap-2">
+          <n-icon size="48" color="#DC2626">
+            <AlertCircle />
+          </n-icon>
+          <p class="text-lg">Are you sure you want to reset this budget?</p>
         </div>
         <template #footer>
-          <div class="flex gap-1 justify-end">
-            <n-button type="error" strong secondary>Delete</n-button>
-            <n-button type="warning" strong secondary>Update</n-button>
-            <n-button @click="showReset = false" type="primary">OK</n-button>
+          <div class="flex gap-3 items-center  justify-center">
+            <n-button @click="showReset = false" type="warning" strong secondary>Cancel</n-button>
+            <n-button @click="resetBudge()" type="primary">OK</n-button>
           </div>
         </template>
       </n-card>
     </n-modal>
 
-    <!-- <n-drawer v-model:show="showRecoad" placement="bottom" resizable>
-      <n-drawer-content title="Stoner">
-        Stoner is a 1965 novel by the American writer John Williams.
+    <n-drawer v-model:show="showDrawUpdate" height="360" placement="top" resizable>
+      <n-drawer-content>
+        <div class="max-w-[1200px] mx-auto flex flex-col relative">
+          <div class="w-full">
+            <div class=" bg-white py-2 px-2 flex items-center justify-center">
+              <div class="lg:w-1/2 w-full h-10 bg-slate-100 rounded-[60px] flex justify-between">
+                <div @click="swichTab(2)" :class="tabe == 1 || tabe == 2 ? 'bg-green-600 text-white' : ''"
+                  class="flex h-full items-center justify-center flex-1 cursor-pointer rounded-[50px] text-lg">
+                  <p>Incomes</p>
+                </div>
+                <div @click="swichTab(3)" :class="tabe == 3 ? 'bg-red-600 text-white' : ''"
+                  class="flex h-full items-center justify-center flex-1 cursor-pointer rounded-[50px] text-lg">
+                  <p>Expense</p>
+                </div>
+              </div>
+            </div>
+            <div class="w-full flex justify-center mt-2 flex-col items-center ">
+              <div class="lg:w-1/2 w-full flex flex-col gap-2">
+                <n-input-number :default-value="10" :parse="parseCurrency" :format="formatCurrency"
+                  placeholder="Please enter amount" step=100 v-model:value="form.amount" autofocus>
+                </n-input-number>
+
+                <n-select v-model:value="form.category" placeholder="select category" :options="categoryList" />
+                <n-input-group>
+                  <n-date-picker v-model:value="form.date" type="date" clearable />
+                </n-input-group>
+                <n-input round v-model:value="form.remark" placeholder="Remark status ..." type="textarea" :autosize="{
+                  minRows: 3
+                }" />
+              </div>
+              <div class="lg:w-1/2 w-full mt-4">
+                <n-button :loading="loadinBtn" @click="createBudget()"
+                  :disabled="!form.amount || !form.category || !form.date"
+                  :color="tabe == 1 || tabe == 2 ? '#16A34A' : '#DC2626'" class="w-full">
+                  Save
+                </n-button>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </n-drawer-content>
-    </n-drawer> -->
+    </n-drawer>
+
   </div>
 </template>
 
 <script>
 import { FlashOutline, LogoYen, Cash } from "@vicons/ionicons5";
-import { GameControllerOutline, GameController,SyncCircleOutline } from "@vicons/ionicons5";
+import { GameControllerOutline, GameController, SyncCircleOutline, AlertCircle } from "@vicons/ionicons5";
 import BaseChart from '../components/BarChart.vue';
 import { useMessage } from "naive-ui";
 import AllList from '../components/AllList.vue';
@@ -252,13 +287,15 @@ export default {
     GameControllerOutline,
     GameController,
     Cash,
-    SyncCircleOutline
+    SyncCircleOutline,
+    AlertCircle
   },
   data() {
     return {
       range: null,
       loadinBtn: false,
-      showReset:false,
+      showReset: false,
+      showDrawUpdate: false,
       categoryList: [],
       listEpentsCategory: [],
       listIncomeCategory: [],
@@ -365,6 +402,30 @@ export default {
     document.title = "Budget App";
   },
   methods: {
+    async deleteList() {
+      try {
+        // delete recoad by id check type income or expense
+        const apiCall = (this.budgetInfo.type == 'income') ? this.$api.deleteIncome(this.budgetInfo.id) : this.$api.deleteExpense(this.budgetInfo.id);
+        const res = await apiCall;
+        this.message.success('Delete success');
+        this.showRecoad = false;
+      } catch (error) {
+        this.message.error('Delete fail');
+        console.log(error);
+      }
+    },
+    async resetBudge() {
+      try {
+        const res = await this.$api.resetBudget()
+        this.message.success('Reset budget success');
+        this.getAlltabe();
+        this.ListAll();
+        this.showReset = false;
+      } catch (error) {
+        this.message.error('Reset budget fail');
+        console.log(error);
+      }
+    },
     parseCurrency: (input) => {
       const nums = input.replace(/(,|\$|\s)/g, "").trim();
       if (/^\d+(\.(\d+)?)?$/.test(nums))
@@ -494,7 +555,7 @@ export default {
         const res = await this.$api.getTotalIncome()
         this.totalIncome = res.total;
         console.log('====================================');
-        console.log('Income',res.categoryTotals);
+        console.log('Income', res.categoryTotals);
         console.log('====================================');
         this.categoryTotal = res.categoryTotals;
       } catch (error) {
@@ -506,7 +567,7 @@ export default {
         const res = await this.$api.getTotalExpense()
         this.totalExpense = res.total;
         console.log('====================================');
-        console.log('Expense',res.categoryTotals);
+        console.log('Expense', res.categoryTotals);
         console.log('====================================');
         this.categoryTotal = res.categoryTotals;
 
@@ -554,20 +615,7 @@ export default {
         this.filterCategory('income')
         this.ListAll()
         this.ListAllIncome()
-        // this.chartOptions.series[0] = {
-        //   color: [
-        //     '#E3E016',
-        //     '#DD1436',
-        //     '#2024E7',
-        //     '#16A34A'
-        //   ]
-        // }
-        // this.chartOptions.series[0].data = [
-        //   { value: 1048, name: 'Salary' },
-        //   { value: 735, name: 'Bonus' },
-        //   { value: 735, name: 'OT' },
-        //   { value: 735, name: 'Part time' }
-        // ]
+
       } else {
         this.filterCategory('expense')
         this.ListAll()
@@ -575,10 +623,7 @@ export default {
         console.log('====================================');
         console.log('Expense');
         console.log('====================================');
-        // this.chartOptions.series[0].data = [
-        //   { value: 1048, name: 'Income' },
-        //   { value: 735, name: 'Expense' },
-        // ]
+  
       }
     }
   },
