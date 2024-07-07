@@ -40,5 +40,7 @@ export default {
     updateExpense(param){
         return requst(`/expenses/update`, "post", param);
     },
-    
+    fitterList(page,size,startDate, endDate){
+        return requst(`/budget/budgetreport?page=${page||0}&size=${size||5}&start=${startDate}&end=${endDate}`, "get");
+    }
 }

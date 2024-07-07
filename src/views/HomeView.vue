@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full min-h-screen bg-slate-50 ">
+  <div class="w-full min-h-screen bg-slate-50 overflow-hidden ">
     <div class="max-w-[1200px] mx-auto min-h-screen flex flex-col relative">
       <!-- header -->
       <div class="w-full h-20">
@@ -21,7 +21,13 @@
         </div>
       </div>
       <!-- show monitor chart -->
-      <div class="p-8 bg-white mt-4 flex md:flex-row flex-col  ">
+      <div class="p-8 bg-white mt-4 flex md:flex-row flex-col relative ">
+        <!-- clear -->
+        <div @click="showReset = true" class="absolute w-8 h-8 flex items-center rounded-md justify-center bg-red-600  right-2 top-2">
+          <n-icon size="18" color="#fff">
+            <SyncCircleOutline />
+          </n-icon>
+        </div>
         <div class="md:w-1/3 w-full  h-64 justify-center flex">
           <BaseChart :options="chartOptions" />
         </div>
@@ -74,9 +80,18 @@
               </div>
               <n-progress type="line" color="#16A34A" :percentage="70" :show-indicator="false" />
             </div> -->
-
           </div>
-
+          <div class="text-lg font-medium mt-2">
+            <p>
+              Income from
+            </p>
+          </div>
+          <div class="mt-4 lg:w-1/2 w-full flex-col flex flex-1 gap-2 overflow-y-auto ">
+            <div v-if="categoryTotal" v-for="(item, index) in categoryTotal" :key="index" class="flex justify-between items-center">
+              <p class="text-lg ">{{item.category.name}}</p>
+              <p class="text-lg font-bold text-green-600">+{{item.total}}</p>
+            </div>
+          </div>
         </div>
         <div class="flex-1 flex flex-col  " v-show="tabe == 3">
           <div class="">
@@ -91,16 +106,25 @@
               Expense on
             </p>
           </div>
-          <div class="mt-4 lg:w-1/2 w-full flex-1  overflow-y-auto ">
-            <div class="flex justify-between items-center">
-              <p class="text-lg ">🏝️dfdfdf</p>
-              <p class="text-lg font-bold">+900</p>
+          <div class="mt-4 lg:w-1/2 w-full flex-col flex flex-1 gap-2 overflow-y-auto ">
+            <div v-if="categoryTotal" v-for="(item, index) in categoryTotal" :key="index" class="flex justify-between items-center">
+              <p class="text-lg ">{{item.category.name}}</p>
+              <p class="text-lg font-bold text-red-600">-{{item.total}}</p>
             </div>
           </div>
         </div>
       </div>
       <!-- list record -->
+
       <div class="mt-4 bg-white flex-1 overflow-y-scroll">
+        <div class="w-full pt-3 px-8 flex">
+          <div class="md:w-80 w-full flex items-center gap-2">
+            <n-date-picker v-model:value="range" type="datetimerange" clearable  @clear="onClearFilterList" @confirm="filterList" />
+            <n-icon size="28" color="#0e7a0d">
+              <Cash />
+            </n-icon>
+          </div>
+        </div>
         <div class="md:p-8 p-4">
           <AllList :budgets="recoadList" :total="total" @clickRecord="ClickRecord" @updateBudgets="updateBudgets" />
         </div>
@@ -113,7 +137,6 @@
               class=" text-white p-2 h-16 w-16 rounded-full">Add</button>
           </div>
         </div>
-
       </div>
     </div>
     <n-drawer v-model:show="showDraw" height="360" placement="top" resizable>
@@ -170,7 +193,7 @@
         </template>
         <div>
           <p>
-            {{ budgetInfo.description }}
+            {{ budgetInfo.remarks }}
             <span>{{ budgetInfo.date }}</span>
           </p>
 
@@ -185,6 +208,26 @@
       </n-card>
     </n-modal>
 
+    <n-modal v-model:show="showReset">
+      <n-card style="width: 600px" :title="budgetInfo.categoryName" :bordered="false" size="huge" role="dialog"
+        aria-modal="true">
+        <template #header-extra>
+          <p :class="budgetInfo.type == 'expense' ? 'text-red-500' : 'text-green-500'" class="text-2xl font-semibold">
+            {{
+              budgetInfo.type == 'expense' ? '- ' : '+ ' }}{{ budgetInfo.amount }}</p>
+        </template>
+        <div>
+        </div>
+        <template #footer>
+          <div class="flex gap-1 justify-end">
+            <n-button type="error" strong secondary>Delete</n-button>
+            <n-button type="warning" strong secondary>Update</n-button>
+            <n-button @click="showReset = false" type="primary">OK</n-button>
+          </div>
+        </template>
+      </n-card>
+    </n-modal>
+
     <!-- <n-drawer v-model:show="showRecoad" placement="bottom" resizable>
       <n-drawer-content title="Stoner">
         Stoner is a 1965 novel by the American writer John Williams.
@@ -194,7 +237,8 @@
 </template>
 
 <script>
-import { FlashOutline, LogoYen } from "@vicons/ionicons5";
+import { FlashOutline, LogoYen, Cash } from "@vicons/ionicons5";
+import { GameControllerOutline, GameController,SyncCircleOutline } from "@vicons/ionicons5";
 import BaseChart from '../components/BarChart.vue';
 import { useMessage } from "naive-ui";
 import AllList from '../components/AllList.vue';
@@ -204,14 +248,21 @@ export default {
     BaseChart,
     AllList,
     FlashOutline,
-    LogoYen
+    LogoYen,
+    GameControllerOutline,
+    GameController,
+    Cash,
+    SyncCircleOutline
   },
   data() {
     return {
+      range: null,
       loadinBtn: false,
+      showReset:false,
       categoryList: [],
       listEpentsCategory: [],
       listIncomeCategory: [],
+      categoryTotal: [],
       tabe: 1,
       page: 0,
       total: 0,
@@ -304,14 +355,14 @@ export default {
   mounted() {
 
   },
-
-
-
   created() {
     this.getAlltabe();
     this.ListAll();
     this.filterCategory('income');
     this.message = useMessage();
+    this.range = [new Date(), new Date()];
+    // set title for page
+    document.title = "Budget App";
   },
   methods: {
     parseCurrency: (input) => {
@@ -333,7 +384,7 @@ export default {
         categoryID: this.form.category,
         source: categoryName,
         date: this.formatDate(new Date(this.form.date)),
-        remark: this.form.remark
+        remarks: this.form.remark
       };
 
       this.loadinBtn = true;
@@ -345,6 +396,14 @@ export default {
         this.clearForm();
         this.getAlltabe();
         this.ListAll();
+        // get total income and expense
+        if (this.tabe == 1) {
+          this.ListAll();
+        } else if (this.tabe == 2) {
+          this.ListAllIncome();
+        } else {
+          this.ListAllExpense();
+        }
         this.showDraw = false;
       }).catch((error) => {
         this.loadinBtn = false;
@@ -353,11 +412,38 @@ export default {
         console.error('Error:', error.response ? error.response.data : error.message);
       });
     },
+    async filterList(page = 0, size = 10) {
+
+      try {
+        const [start, end] = this.range;
+        // format date  to yyyy-mm-dd
+        const startDate = this.formatDate(new Date(start));
+        const endDate = this.formatDate(new Date(end));
+        console.log("🚀 ~ filterList ~ startDate:", startDate)
+        console.log("🚀 ~ filterList ~ endDate:", endDate)
+        const res = await this.$api.fitterList(page, size, startDate, endDate);
+        if (this.tabe == 1) {
+          this.recoadList = res.content;
+        } else if (this.tabe == 2) {
+          this.recoadList = res.content.filter((item) => item.type == 'income');
+        } else {
+          this.recoadList = res.content.filter((item) => item.type == 'expense');
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    onClearFilterList() {
+      this.range = [new Date(), new Date()];
+      this.ListAll();
+      console.log('====================================');
+      console.log('onClearFilterList');
+      console.log('====================================');
+    },
     formatDate(date) {
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero indexed
       const day = String(date.getDate()).padStart(2, '0');
-
       return `${year}-${month}-${day}`;
     },
     clearForm() {
@@ -403,24 +489,27 @@ export default {
 
       }
     },
-    async ListAllIncome(page = 0, size = 10) {
+    async ListAllIncome() {
       try {
-        const res = await this.$api.getAllIncome(page, size)
-        const res2 = await this.$api.getTotalIncome()
-        this.totalIncome = res2.total
-       
-        this.recoadList = res.content;
-        console.log("🚀 ~ ListAllIncome ~ this.recoadList:", this.recoadList)
-        this.total = res.totalElements;
+        const res = await this.$api.getTotalIncome()
+        this.totalIncome = res.total;
+        console.log('====================================');
+        console.log('Income',res.categoryTotals);
+        console.log('====================================');
+        this.categoryTotal = res.categoryTotals;
       } catch (error) {
         console.log(error);
       }
     },
-    async ListAllExpense(page = 0, size = 10) {
+    async ListAllExpense() {
       try {
-        const res = await this.$api.getAllExpense(page, size)
-        this.recoadList = res.content;
-        this.total = res.totalElements;
+        const res = await this.$api.getTotalExpense()
+        this.totalExpense = res.total;
+        console.log('====================================');
+        console.log('Expense',res.categoryTotals);
+        console.log('====================================');
+        this.categoryTotal = res.categoryTotals;
+
       } catch (error) {
         console.log(error);
       }
@@ -428,8 +517,19 @@ export default {
     async ListAll(page = 0, size = 10) {
       try {
         const res = await this.$api.listAll(page, size);
-        this.recoadList = res.content;
         this.total = res.totalElements;
+        // filter income and expense if tabe is 1 show all income and expense else show income or expense
+        if (this.tabe == 1) {
+          this.recoadList = res.content;
+          console.log("🚀 ~ ListAll ~ this.recoadList: t1", this.recoadList)
+
+        } else if (this.tabe == 2) {
+          this.recoadList = res.content.filter((item) => item.type == 'income');
+          console.log("🚀 ~ ListAll ~ this.recoadList: t2", this.recoadList)
+        } else {
+          this.recoadList = res.content.filter((item) => item.type == 'expense');
+          console.log("🚀 ~ ListAll ~ this.recoadList: t3", this.recoadList)
+        }
       } catch (error) {
         console.log(error);
       }
@@ -452,6 +552,7 @@ export default {
         this.ListAll()
       } else if (e == 2) {
         this.filterCategory('income')
+        this.ListAll()
         this.ListAllIncome()
         // this.chartOptions.series[0] = {
         //   color: [
@@ -469,6 +570,7 @@ export default {
         // ]
       } else {
         this.filterCategory('expense')
+        this.ListAll()
         this.ListAllExpense()
         console.log('====================================');
         console.log('Expense');
