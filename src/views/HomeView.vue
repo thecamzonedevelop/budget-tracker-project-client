@@ -205,12 +205,12 @@
     </n-modal>
 
     <n-modal v-model:show="showReset">
-      <n-card style="width: 300px" :bordered="false" size="huge" role="dialog"
+      <n-card style="max-width: 400px" class="mx-4 rounded-xl" :bordered="false" size="huge" role="dialog"
         aria-modal="true">
 
         <!-- show message for reset budgetking -->
         <div class="w-full flex flex-col items-center gap-2">
-          <n-icon size="48" color="#DC2626">
+          <n-icon size="78" color="#DC2626">
             <AlertCircle />
           </n-icon>
           <p class="text-lg">Are you sure you want to reset this budget?</p>
