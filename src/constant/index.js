@@ -1,5 +1,4 @@
 
-
 const all = {
     expense: 500,
     income: 1000,

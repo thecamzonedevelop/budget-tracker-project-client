@@ -124,6 +124,7 @@
         </div>
         <div class="md:p-8 p-4">
           <AllList :budgets="recoadList" :total="total" @clickRecord="ClickRecord" @updateBudgets="updateBudgets" />
+          
         </div>
       </div>
       <!-- button add -->
@@ -180,19 +181,20 @@
     </n-drawer>
 
     <n-modal v-model:show="showRecoad">
-      <n-card style="max-width: 600px;" class="mx-4 rounded-xl" :title="budgetInfo.categoryName" :bordered="false" size="huge" role="dialog"
+      <n-card  class=" rounded-xl md:max-w-[600px] sm:max-w-[360px] max-w-[400px] " :title="budgetInfo.categoryName" :bordered="false" size="huge" role="dialog"
         aria-modal="true">
         <template #header-extra>
           <p :class="budgetInfo.type == 'expense' ? 'text-red-500' : 'text-green-500'" class="text-2xl font-semibold">
             {{
               budgetInfo.type == 'expense' ? '- ' : '+ ' }}{{ budgetInfo.amount }}</p>
+      
         </template>
         <div>
           <p>
             {{ budgetInfo.remarks }}
-            <span>{{ budgetInfo.date }}</span>
+            
           </p>
-
+          <span>{{ budgetInfo.date }}</span>
         </div>
         <template #footer>
           <div class="flex gap-1 justify-end">
@@ -205,7 +207,7 @@
     </n-modal>
 
     <n-modal v-model:show="showReset">
-      <n-card style="max-width: 400px" class="mx-4 rounded-xl" :bordered="false" size="huge" role="dialog"
+      <n-card  class="max-w-[400px] rounded-xl" :bordered="false" size="huge" role="dialog"
         aria-modal="true">
 
         <!-- show message for reset budgetking -->
@@ -405,13 +407,19 @@ export default {
     async deleteList() {
       try {
         // delete recoad by id check type income or expense
-        const apiCall = (this.budgetInfo.type == 'income') ? this.$api.deleteIncome(this.budgetInfo.id) : this.$api.deleteExpense(this.budgetInfo.id);
+        const data = {
+          id: this.budgetInfo.id
+        }
+        const apiCall = (this.budgetInfo.type == 'income') ? this.$api.deleteIncome(data) : this.$api.deleteExpense(data);
         const res = await apiCall;
         this.message.success('Delete success');
-        this.showRecoad = false;
       } catch (error) {
         this.message.error('Delete fail');
         console.log(error);
+      } finally {
+        this.ListAll();
+        this.getAlltabe();
+        this.showRecoad = false;
       }
     },
     async resetBudge() {
@@ -596,7 +604,14 @@ export default {
       }
     },
     updateBudgets(newItems) {
-      this.recoadList = [...this.recoadList, ...newItems];
+      // check filter income and expense
+      if (this.tabe == 1) {
+        this.recoadList = [...this.recoadList, ...newItems];
+      } else if (this.tabe == 2) {
+        this.recoadList = [...this.recoadList, ...newItems.filter((item) => item.type == 'income')];
+      } else {
+        this.recoadList = [...this.recoadList, ...newItems.filter((item) => item.type == 'expense')];
+      }
     },
 
     ClickRecord(e) {

@@ -29,10 +29,10 @@ export default {
         return requst("/expenses", "post", param);
     },
     deleteIncome(param){
-        return requst(`/incomes/delete?id=${param}`, "delete");
+        return requst("/incomes/delete", "post",param);
     },
     deleteExpense(param){
-        return requst(`/expenses/delete?id=${param}`, "delete");
+        return requst(`/expenses/delete`, "post",param);
     },
     updateIncome(param){
         return requst(`/incomes/update`, "post", param);
