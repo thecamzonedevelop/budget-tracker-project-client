@@ -25,6 +25,14 @@ A simple budget tracker app built with Vue.js and Tailwind CSS.
 - Native UI components
 - Tailwind CSS
 
+## Getting Started
+```bash
+git clone https://github.com/thecamzonedevelop/budget-tracker-project-client.git
+cd budget-tracker-project-client
+npm install
+npm run dev
+```
+
 ## API
 ```javascript
 import axios from 'axios';
@@ -53,17 +61,17 @@ export default (url, method, params) => {
 };
 ```
 ## Environment Variables
-```
+```bash
 VUE_APP_API_URL=http://localhost:5001/api
 ```
 
 ## Project setup
-```
+```bash
 npm install
 ```
 
 ### Compiles and hot-reloads for development
-```
+```bash
 npm run dev
 ```
 
