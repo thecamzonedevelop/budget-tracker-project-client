@@ -124,7 +124,7 @@
         </div>
         <div class="md:p-8 p-4">
           <AllList :budgets="recoadList" :total="total" @clickRecord="ClickRecord" @updateBudgets="updateBudgets" />
-          
+
         </div>
       </div>
       <!-- button add -->
@@ -181,25 +181,25 @@
     </n-drawer>
 
     <n-modal v-model:show="showRecoad">
-      <n-card  class=" rounded-xl md:max-w-[600px] sm:max-w-[360px] max-w-[400px] " :title="budgetInfo.categoryName" :bordered="false" size="huge" role="dialog"
-        aria-modal="true">
+      <n-card class=" rounded-xl md:max-w-[600px] sm:max-w-[360px] max-w-[400px] " :title="budgetInfo.categoryName"
+        :bordered="false" size="huge" role="dialog" aria-modal="true">
         <template #header-extra>
           <p :class="budgetInfo.type == 'expense' ? 'text-red-500' : 'text-green-500'" class="text-2xl font-semibold">
             {{
               budgetInfo.type == 'expense' ? '- ' : '+ ' }}{{ budgetInfo.amount }}</p>
-      
+
         </template>
         <div>
           <p>
             {{ budgetInfo.remarks }}
-            
+
           </p>
           <span>{{ budgetInfo.date }}</span>
         </div>
         <template #footer>
           <div class="flex gap-1 justify-end">
             <n-button type="error" @click="deleteList()" strong secondary>Delete</n-button>
-            <n-button type="warning" strong secondary>Update</n-button>
+            <n-button type="warning" @click="handleUpdate()" strong secondary>Update</n-button>
             <n-button @click="showRecoad = false" type="primary">OK</n-button>
           </div>
         </template>
@@ -207,8 +207,7 @@
     </n-modal>
 
     <n-modal v-model:show="showReset">
-      <n-card  class="max-w-[400px] rounded-xl" :bordered="false" size="huge" role="dialog"
-        aria-modal="true">
+      <n-card class="max-w-[400px] rounded-xl" :bordered="false" size="huge" role="dialog" aria-modal="true">
 
         <!-- show message for reset budgetking -->
         <div class="w-full flex flex-col items-center gap-2">
@@ -231,15 +230,10 @@
         <div class="max-w-[1200px] mx-auto flex flex-col relative">
           <div class="w-full">
             <div class=" bg-white py-2 px-2 flex items-center justify-center">
-              <div class="lg:w-1/2 w-full h-10 bg-slate-100 rounded-[60px] flex justify-between">
-                <div @click="swichTab(2)" :class="tabe == 1 || tabe == 2 ? 'bg-green-600 text-white' : ''"
-                  class="flex h-full items-center justify-center flex-1 cursor-pointer rounded-[50px] text-lg">
-                  <p>Incomes</p>
-                </div>
-                <div @click="swichTab(3)" :class="tabe == 3 ? 'bg-red-600 text-white' : ''"
-                  class="flex h-full items-center justify-center flex-1 cursor-pointer rounded-[50px] text-lg">
-                  <p>Expense</p>
-                </div>
+              <div class="lg:w-1/2 w-full h-10 rounded-[60px] flex justify-between">
+                <p class="text-xl">
+                  Update
+                </p>
               </div>
             </div>
             <div class="w-full flex justify-center mt-2 flex-col items-center ">
@@ -256,11 +250,11 @@
                   minRows: 3
                 }" />
               </div>
-              <div class="lg:w-1/2 w-full mt-4">
-                <n-button :loading="loadinBtn" @click="createBudget()"
-                  :disabled="!form.amount || !form.category || !form.date"
-                  :color="tabe == 1 || tabe == 2 ? '#16A34A' : '#DC2626'" class="w-full">
-                  Save
+              <div class="lg:w-1/2 w-full justify-end mt-4 flex gap-3">
+                <!-- cancel and update button(incomes & expens) -->
+                <n-button @click="cancelUpdate()" type="warning" strong secondary>Cancel</n-button>
+                <n-button @click="updateBudget()" :color="tabe == 1 || tabe == 2 ? '#16A34A' : '#DC2626'">
+                  Update
                 </n-button>
               </div>
             </div>
@@ -297,7 +291,7 @@ export default {
       range: null,
       loadinBtn: false,
       showReset: false,
-      showDrawUpdate: false,
+      showDrawUpdate: true,
       categoryList: [],
       listEpentsCategory: [],
       listIncomeCategory: [],
@@ -481,6 +475,45 @@ export default {
         console.error('Error:', error.response ? error.response.data : error.message);
       });
     },
+    handleUpdate() {
+      this.showDrawUpdate = true;
+      this.form = {
+        amount: this.budgetInfo.amount,
+        category: this.budgetInfo.categoryID,
+        date: new Date(this.budgetInfo.date), // timestamp
+        remark: this.budgetInfo.remarks
+      }
+    },
+    cancelUpdate() {
+      this.showDrawUpdate = false;
+      this.clearForm();
+    },
+    async updateBudget() {
+      let categoryName = this.categoryList.find((item) => item.value == this.form.category).label;
+      const data = {
+        id: this.budgetInfo.id,
+        amount: this.form.amount,
+        categoryID: this.form.category,
+        source: categoryName,
+        date: this.formatDate(new Date(this.form.date)),
+        remarks: this.form.remark
+      };
+      this.loadinBtn = true;
+      const apiCall = (this.tabe === 1 || this.tabe === 2) ? this.$api.updateIncome(data) : this.$api.updateExpense(data);
+      apiCall.then((res) => {
+        this.loadinBtn = false;
+        this.message.success(`Update ${this.tabe === 1 || this.tabe === 2 ? 'income' : 'expense'} success`);
+        this.clearForm();
+        this.getAlltabe();
+        this.ListAll();
+        this.showDrawUpdate = false;
+      }).catch((error) => {
+        this.loadinBtn = false;
+        this.showDrawUpdate = false;
+        this.message.error(`Update ${this.tabe === 1 || this.tabe === 2 ? 'income' : 'expense'} fail`);
+        console.error('Error:', error.response ? error.response.data : error.message);
+      });
+    },
     async filterList(page = 0, size = 10) {
 
       try {
@@ -638,7 +671,7 @@ export default {
         console.log('====================================');
         console.log('Expense');
         console.log('====================================');
-  
+
       }
     }
   },
