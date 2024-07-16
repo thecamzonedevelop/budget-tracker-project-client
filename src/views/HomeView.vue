@@ -55,7 +55,7 @@
               <n-skeleton height="40px" width="96%" :sharp="false" />
             </n-space>
           </div>
-          <div v-if="!isLoading" >
+          <div v-if="!isLoading">
             <p class="text-lg font-bold">Total Incomes</p>
             <div class="text-3xl font-bold flex text-green-600">
               <p class="mr-2">$ </p>
@@ -136,7 +136,7 @@
         <div class="w-full pt-3 px-8 flex">
           <div class="md:w-80 w-full flex items-center gap-2">
             <n-date-picker v-model:value="range" type="datetimerange" clearable @clear="onClearFilterList"
-              @confirm="filterList" />
+              @confirm="filterList()" />
             <n-icon size="28" color="#0e7a0d">
               <Cash />
             </n-icon>
@@ -555,15 +555,25 @@ export default {
         console.error('Error:', error.response ? error.response.data : error.message);
       });
     },
-    async filterList(page = 0, size = 10) {
-
+     filterList() {
+    
       try {
-        const [start, end] = this.range;
-        // format date  to yyyy-mm-dd
+        // Ensure this.range is iterable or provide a default value
+        const [start, end] = this.range || [new Date(), new Date()]; // Default to current date if this.range is null
+        // format date to yyyy-mm-dd
         const startDate = this.formatDate(new Date(start));
         const endDate = this.formatDate(new Date(end));
         console.log("🚀 ~ filterList ~ startDate:", startDate)
         console.log("🚀 ~ filterList ~ endDate:", endDate)
+        this.listFilter(0, 10, startDate, endDate);
+      } catch (error) {
+        // log error
+        console.log(error);
+
+      }
+    },
+    async listFilter(page, size , startDate, endDate) {
+      try {
         if (this.tabe == 1) {
           const res = await this.$api.fitterList(page, size, startDate, endDate);
           this.recoadList = res.content;
@@ -573,7 +583,7 @@ export default {
         } else {
           const res = await this.$api.fitterListExpense(page, size, startDate, endDate);
           this.recoadList = res.content;
-        } // filter income and expense if tabe is 1 show all income and expense else show income or expense
+        }
       } catch (error) {
         console.log(error);
       }
@@ -624,11 +634,11 @@ export default {
         }
         this.chartOptions.series[0].data = [
           {
-            value: this.totalIncome,
+            value: this.totalIncome || 0,
             name: 'Income'
           },
           {
-            value: this.totalExpense,
+            value: this.totalExpense || 0,
             name: 'Expense'
           },
         ]
