@@ -253,7 +253,9 @@
               <div class="lg:w-1/2 w-full justify-end mt-4 flex gap-3">
                 <!-- cancel and update button(incomes & expens) -->
                 <n-button @click="cancelUpdate()" type="warning" strong secondary>Cancel</n-button>
-                <n-button @click="updateBudget()" :color="tabe == 1 || tabe == 2 ? '#16A34A' : '#DC2626'">
+                <n-button @click="updateBudget()" :color="tabe == 1 || tabe == 2 ? '#16A34A' : '#DC2626'"
+                  :disabled="!form.amount || !form.category || !form.date" 
+                >
                   Update
                 </n-button>
               </div>
@@ -291,7 +293,7 @@ export default {
       range: null,
       loadinBtn: false,
       showReset: false,
-      showDrawUpdate: true,
+      showDrawUpdate: false,
       categoryList: [],
       listEpentsCategory: [],
       listIncomeCategory: [],
@@ -411,9 +413,16 @@ export default {
         this.message.error('Delete fail');
         console.log(error);
       } finally {
-        this.ListAll();
-        this.getAlltabe();
         this.showRecoad = false;
+        this.getAlltabe();
+        if (this.tabe == 1) {
+          this.ListAll();
+        } else if (this.tabe == 2) {
+          this.ListAllIncome();
+        } else {
+          this.ListAllExpense();
+        }
+
       }
     },
     async resetBudge() {
@@ -477,6 +486,7 @@ export default {
     },
     handleUpdate() {
       this.showDrawUpdate = true;
+      this.showRecoad = false;
       this.form = {
         amount: this.budgetInfo.amount,
         category: this.budgetInfo.categoryID,
@@ -503,13 +513,21 @@ export default {
       apiCall.then((res) => {
         this.loadinBtn = false;
         this.message.success(`Update ${this.tabe === 1 || this.tabe === 2 ? 'income' : 'expense'} success`);
-        this.clearForm();
-        this.getAlltabe();
-        this.ListAll();
+        
+        if (this.tabe == 1) {
+          this.ListAll();
+        } else if (this.tabe == 2) {
+          this.ListAllIncome();
+        } else {
+          this.ListAllExpense();
+        }
         this.showDrawUpdate = false;
       }).catch((error) => {
         this.loadinBtn = false;
         this.showDrawUpdate = false;
+        this.showRecoad = false;
+        this.clearForm();
+        this.getAlltabe();
         this.message.error(`Update ${this.tabe === 1 || this.tabe === 2 ? 'income' : 'expense'} fail`);
         console.error('Error:', error.response ? error.response.data : error.message);
       });
@@ -523,24 +541,29 @@ export default {
         const endDate = this.formatDate(new Date(end));
         console.log("🚀 ~ filterList ~ startDate:", startDate)
         console.log("🚀 ~ filterList ~ endDate:", endDate)
-        const res = await this.$api.fitterList(page, size, startDate, endDate);
         if (this.tabe == 1) {
+          const res = await this.$api.fitterList(page, size, startDate, endDate);
           this.recoadList = res.content;
         } else if (this.tabe == 2) {
-          this.recoadList = res.content.filter((item) => item.type == 'income');
+          const res = await this.$api.fitterListIncome(page, size, startDate, endDate);
+          this.recoadList = res.content;
         } else {
-          this.recoadList = res.content.filter((item) => item.type == 'expense');
-        }
+          const res = await this.$api.fitterListExpense(page, size, startDate, endDate);
+          this.recoadList = res.content;
+        } // filter income and expense if tabe is 1 show all income and expense else show income or expense
       } catch (error) {
         console.log(error);
       }
     },
     onClearFilterList() {
       this.range = [new Date(), new Date()];
-      this.ListAll();
-      console.log('====================================');
-      console.log('onClearFilterList');
-      console.log('====================================');
+      if (this.tabe == 1) {
+        this.ListAll();
+      } else if (this.tabe == 2) {
+        this.ListAllIncome();
+      } else {
+        this.ListAllExpense();
+      }
     },
     formatDate(date) {
       const year = date.getFullYear();
@@ -591,27 +614,32 @@ export default {
 
       }
     },
-    async ListAllIncome() {
+    async ListAllIncome(page = 0, size = 10) {
       try {
         const res = await this.$api.getTotalIncome()
+        const res2 = await this.$api.getAllIncome(page, size);
+        this.total = res2.totalElements;
         this.totalIncome = res.total;
         console.log('====================================');
         console.log('Income', res.categoryTotals);
         console.log('====================================');
         this.categoryTotal = res.categoryTotals;
+        this.recoadList = res2.content;
       } catch (error) {
         console.log(error);
       }
     },
-    async ListAllExpense() {
+    async ListAllExpense(page = 0, size = 10) {
       try {
         const res = await this.$api.getTotalExpense()
+        const res2 = await this.$api.getAllExpense(page, size);
         this.totalExpense = res.total;
         console.log('====================================');
         console.log('Expense', res.categoryTotals);
         console.log('====================================');
         this.categoryTotal = res.categoryTotals;
-
+        this.total = res2.totalElements;
+        this.recoadList = res2.content;
       } catch (error) {
         console.log(error);
       }
@@ -625,13 +653,14 @@ export default {
           this.recoadList = res.content;
           console.log("🚀 ~ ListAll ~ this.recoadList: t1", this.recoadList)
 
-        } else if (this.tabe == 2) {
-          this.recoadList = res.content.filter((item) => item.type == 'income');
-          console.log("🚀 ~ ListAll ~ this.recoadList: t2", this.recoadList)
-        } else {
-          this.recoadList = res.content.filter((item) => item.type == 'expense');
-          console.log("🚀 ~ ListAll ~ this.recoadList: t3", this.recoadList)
-        }
+        } 
+        // else if (this.tabe == 2) {
+        //   this.recoadList = res.content.filter((item) => item.type == 'income');
+        //   console.log("🚀 ~ ListAll ~ this.recoadList: t2", this.recoadList)
+        // } else {
+        //   this.recoadList = res.content.filter((item) => item.type == 'expense');
+        //   console.log("🚀 ~ ListAll ~ this.recoadList: t3", this.recoadList)
+        // }
       } catch (error) {
         console.log(error);
       }

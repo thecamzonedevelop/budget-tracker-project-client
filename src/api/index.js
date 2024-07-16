@@ -43,6 +43,12 @@ export default {
     fitterList(page,size,startDate, endDate){
         return requst(`/budget/budgetreport?page=${page||0}&size=${size||5}&start=${startDate}&end=${endDate}`, "get");
     },
+    filterIncome(page,size,startDate, endDate){
+        return requst(`/incomes/report?page=${page||0}&size=${size||5}&start=${startDate}&end=${endDate}`, "get");
+    },
+    filterExpense(page,size,startDate, endDate){
+        return requst(`/expenses/report??page=${page||0}&size=${size||5}&start=${startDate}&end=${endDate}`, "get");
+    },
     resetBudget(param){
         return requst(`/budget/reset`, "post", param);
     }

@@ -1,6 +1,6 @@
 <template>
     <div 
-    :class="budgetsItem.type=='expense'?'bg-red-50':'bg-green-50'"
+    :class="budgetsItem.type=='expense' || budgetsItem.type=='Expense' ?'bg-red-50':'bg-green-50'"
     class="w-full p-4 flex justify-between rounded-md" @click="emitClickRecord">
         <div class="flex gap-3 w-full">
             <!-- <div class="h-16 w-16 bg-white rounded-lg flex items-center justify-center text-xl">
@@ -12,9 +12,9 @@
                         {{budgetsItem.categoryName}}
                     </p>
                     <p class="text-xl font-medium "
-                        :class="budgetsItem.type=='expense'?'text-red-500':'text-green-500'"
+                        :class="budgetsItem.type=='expense' || budgetsItem.type=='Expense' ?'text-red-500':'text-green-500'"
                     >
-                        {{ budgetsItem.type=='expense'?'- ':'+ '  }}{{ budgetsItem.amount}}$
+                        {{ budgetsItem.type=='expense' || budgetsItem.type=='Expense' ?'- ':'+ '  }}{{ budgetsItem.amount}}$
                     </p>
                 </div>
                 <!-- <div class="w-full mt-2 text-end">
