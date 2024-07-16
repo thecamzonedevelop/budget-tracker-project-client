@@ -2,6 +2,7 @@
   <div class="w-full min-h-screen bg-slate-50 overflow-hidden ">
     <div class="max-w-[1200px] mx-auto min-h-screen flex flex-col relative">
       <!-- header -->
+
       <div class="w-full h-20">
         <div class="w-full max-w-[1200px] fixed top-0 z-50 bg-white py-4 px-2 flex items-center justify-center">
           <div class="lg:w-1/2 w-full h-14 bg-slate-100 rounded-[60px] flex justify-between">
@@ -29,24 +30,43 @@
             <SyncCircleOutline />
           </n-icon>
         </div>
-        <div class="md:w-1/3 w-full  h-64 justify-center flex">
+        <div v-if="isLoading" class="md:w-1/3 w-full  h-64 justify-center flex">
+          <n-skeleton height="246px" circle />
+        </div>
+        <div v-else class="md:w-1/3 w-full  h-64 justify-center flex">
           <BaseChart :options="chartOptions" />
         </div>
         <div class="flex-1 " v-show="tabe == 1">
-          <div>
+          <div v-if="isLoading">
+            <n-space vertical>
+              <n-skeleton height="40px" width="53%" />
+              <n-skeleton height="40px" width="96%" :sharp="false" />
+            </n-space>
+          </div>
+          <div v-if="isLoading" class="mt-4">
+            <n-space vertical>
+              <n-skeleton height="40px" width="53%" />
+              <n-skeleton height="40px" width="96%" :sharp="false" />
+            </n-space>
+          </div>
+          <div v-if="isLoading" class="mt-4">
+            <n-space vertical>
+              <n-skeleton height="40px" width="53%" />
+              <n-skeleton height="40px" width="96%" :sharp="false" />
+            </n-space>
+          </div>
+          <div v-if="!isLoading" >
             <p class="text-lg font-bold">Total Incomes</p>
             <div class="text-3xl font-bold flex text-green-600">
               <p class="mr-2">$ </p>
               <n-number-animation ref="numberAnimationInstRef" :from="0.00" :to="totalIncome" show-separator
                 :precision="2" />
             </div>
-            <!-- <p class="text-3xl font-bold">$ 1,000.00</p> -->
-
             <div class="mt-2 lg:w-1/2 w-full">
               <n-progress type="line" color="#16A34A" :percentage="progressIncome" />
             </div>
           </div>
-          <div class="mt-4">
+          <div v-if="!isLoading" class="mt-4">
             <p class="text-lg font-bold">Total Expense</p>
             <div class="text-3xl font-bold flex text-red-600">
               <p class="mr-2">$ </p>
@@ -56,7 +76,7 @@
               <n-progress type="line" color="#DC2626" :percentage="progressExpense" />
             </div>
           </div>
-          <div class="mt-4">
+          <div v-if="!isLoading" class="mt-4">
             <p class="text-lg font-bold">Saving</p>
             <div class="text-3xl font-bold flex text-sky-500">
               <p class="mr-2">$ </p>
@@ -254,8 +274,7 @@
                 <!-- cancel and update button(incomes & expens) -->
                 <n-button @click="cancelUpdate()" type="warning" strong secondary>Cancel</n-button>
                 <n-button @click="updateBudget()" :color="tabe == 1 || tabe == 2 ? '#16A34A' : '#DC2626'"
-                  :disabled="!form.amount || !form.category || !form.date" 
-                >
+                  :disabled="!form.amount || !form.category || !form.date">
                   Update
                 </n-button>
               </div>
@@ -290,6 +309,7 @@ export default {
   },
   data() {
     return {
+      isLoading: false,
       range: null,
       loadinBtn: false,
       showReset: false,
@@ -398,6 +418,9 @@ export default {
     this.range = [new Date(), new Date()];
     // set title for page
     document.title = "Budget App";
+    // setTimeout(() => {
+    //   this.isLoading = true;
+    // }, 1000);
   },
   methods: {
     async deleteList() {
@@ -513,7 +536,7 @@ export default {
       apiCall.then((res) => {
         this.loadinBtn = false;
         this.message.success(`Update ${this.tabe === 1 || this.tabe === 2 ? 'income' : 'expense'} success`);
-        
+
         if (this.tabe == 1) {
           this.ListAll();
         } else if (this.tabe == 2) {
@@ -653,7 +676,7 @@ export default {
           this.recoadList = res.content;
           console.log("🚀 ~ ListAll ~ this.recoadList: t1", this.recoadList)
 
-        } 
+        }
         // else if (this.tabe == 2) {
         //   this.recoadList = res.content.filter((item) => item.type == 'income');
         //   console.log("🚀 ~ ListAll ~ this.recoadList: t2", this.recoadList)
