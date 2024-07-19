@@ -4,13 +4,12 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 
 // Base64 encoded Noto Emoji font (this should be a complete base64 string)
-const notoEmojiBase64 = "data:font/ttf;base64,AAEAAAARAQAABAAwRFNJRwAAAAAAAAEAAQABAAAAAAwAAABH..."; // Ensure this is a full base64 encoded font string
-
+// const notoEmojiBase64 = "AAEAAAASAQAABAAgR0RFRgAAAZgAAAQwAAAAAAAAAAAAAAAAAAAAAAAAA..."; // Add the complete base64 string here
 export function generatePdf(data) {
   const doc = new jsPDF();
 
   // Add the Noto Emoji font
-  doc.addFileToVFS("NotoEmoji.ttf", notoEmojiBase64);
+  doc.addFileToVFS("NotoEmoji.ttf");
   doc.addFont("NotoEmoji.ttf", "NotoEmoji", "normal");
   doc.setFont("NotoEmoji");
 
@@ -52,7 +51,8 @@ export function generatePdf(data) {
   // Map the data to fit the table structure
   const rows = data.map((item) => ({
     id: item.id,
-    categoryName: removeEmojis(item.categoryName), // Remove emojis from categoryName
+    // categoryName: removeEmojis(item.categoryName), // Remove emojis from categoryName
+    categoryName: item.categoryName,
     amount: item.amount.toFixed(2),
     date: item.date,
     type: item.type,
