@@ -24,12 +24,21 @@
       <!-- show monitor chart -->
       <div class="p-8 bg-white mt-4 flex md:flex-row flex-col relative ">
         <!-- clear -->
-        <div @click="showReset = true"
-          class="absolute w-8 h-8 flex items-center rounded-md justify-center bg-red-600  right-2 top-2">
-          <n-icon size="18" color="#fff">
-            <SyncCircleOutline />
-          </n-icon>
+        <div class="absolute right-2 top-2 flex gap-2">
+          <div @click="showDownloadPdf = true"
+            class=" w-8 h-8 flex items-center rounded-md justify-center bg-sky-500  ">
+            <n-icon size="18" color="#fff">
+              <ReceiptOutline />
+            </n-icon>
+          </div>
+          <div @click="showReset = true" class=" w-8 h-8 flex items-center rounded-md justify-center bg-red-600  ">
+            <n-icon size="18" color="#fff">
+              <SyncCircleOutline />
+            </n-icon>
+          </div>
+
         </div>
+
         <div v-if="isLoading" class="md:w-1/3 w-full  h-64 justify-center flex">
           <n-skeleton height="246px" circle />
         </div>
@@ -244,6 +253,28 @@
         </template>
       </n-card>
     </n-modal>
+    <n-modal v-model:show="showDownloadPdf">
+      <n-card class="max-w-[400px] rounded-xl" :bordered="false" size="huge" role="dialog" aria-modal="true">
+
+        <!-- show message for reset budgetking -->
+        <div class="w-full flex flex-col items-center gap-2">
+          <n-icon size="78" color="#0ea5e9">
+            <ReceiptOutline />
+          </n-icon>
+          <p class="text-lg">
+            Are you sure you want to download this budget?
+          </p>
+        </div>
+        <template #footer>
+          <div class="flex gap-3 items-center  justify-center">
+            <n-button @click="showDownloadPdf = false" type="warning" strong secondary>Cancel</n-button>
+            <n-button @click="downloadPdf()" type="primary">
+              Download
+            </n-button>
+          </div>
+        </template>
+      </n-card>
+    </n-modal>
 
     <n-drawer v-model:show="showDrawUpdate" height="360" placement="top" resizable>
       <n-drawer-content>
@@ -290,10 +321,12 @@
 
 <script>
 import { FlashOutline, LogoYen, Cash } from "@vicons/ionicons5";
-import { GameControllerOutline, GameController, SyncCircleOutline, AlertCircle } from "@vicons/ionicons5";
+import { GameControllerOutline, GameController, SyncCircleOutline, AlertCircle,ArrowDownCircleOutline,ReceiptOutline } from "@vicons/ionicons5";
 import BaseChart from '../components/BarChart.vue';
 import { useMessage } from "naive-ui";
 import AllList from '../components/AllList.vue';
+import { generatePdf } from '@/utils/generatePdf';
+
 export default {
   name: "HomeView",
   components: {
@@ -305,7 +338,9 @@ export default {
     GameController,
     Cash,
     SyncCircleOutline,
-    AlertCircle
+    AlertCircle,
+    ArrowDownCircleOutline,
+    ReceiptOutline
   },
   data() {
     return {
@@ -313,6 +348,7 @@ export default {
       range: null,
       loadinBtn: false,
       showReset: false,
+      showDownloadPdf: false,
       showDrawUpdate: false,
       categoryList: [],
       listEpentsCategory: [],
@@ -423,6 +459,19 @@ export default {
     // }, 1000);
   },
   methods: {
+    downloadPdf() {
+      try {
+        if (this.recoadList.length > 0) {
+          generatePdf(this.recoadList);
+        } else {
+          this.message.warning('No data to download');
+        }
+      } catch (error) {
+        console.log(error);
+      } finally {
+        this.showDownloadPdf = false;
+      }
+    },
     async deleteList() {
       try {
         // delete recoad by id check type income or expense
@@ -555,8 +604,8 @@ export default {
         console.error('Error:', error.response ? error.response.data : error.message);
       });
     },
-     filterList() {
-    
+    filterList() {
+
       try {
         // Ensure this.range is iterable or provide a default value
         const [start, end] = this.range || [new Date(), new Date()]; // Default to current date if this.range is null
@@ -572,7 +621,7 @@ export default {
 
       }
     },
-    async listFilter(page, size , startDate, endDate) {
+    async listFilter(page, size, startDate, endDate) {
       try {
         if (this.tabe == 1) {
           const res = await this.$api.fitterList(page, size, startDate, endDate);
